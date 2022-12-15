@@ -1,0 +1,50 @@
+version: "3.1"
+services:
+    www:
+        build: 
+            context: .
+#           dockerfile: Dockerfile
+
+        image: appphp
+        ports: 
+            - 80:80
+        volumes:
+            - ./www:/var/www/html
+        links:
+            - db
+        networks:
+            - default
+    db:
+        container_name: db
+        image: mysql:latest
+        ports: 
+            - 3306:3306
+        environment:
+            MYSQL_DATABASE: dbDATA
+            MYSQL_ROOT_PASSWORD: 1234 
+            # MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+        volumes:
+            - ./dump:/docker-entrypoint-initdb.d
+            - ./conf:/etc/mysql/conf.d
+            - mysql_data:/var/lib/mysql
+            # - ./data:/var/lib/mysql # Podemos acceder al FS de mysql
+        networks:
+            - default
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        links: 
+            - db:db
+        ports:
+            - 8000:80
+        environment:
+            MYSQL_ROOT_PASSWORD: 1234 
+    adminer:
+        image: adminer
+        restart: always
+        links: 
+            - db:db
+        ports:
+        - 8080:8080
+volumes:
+    mysql_data:
+
