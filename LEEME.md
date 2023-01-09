@@ -28,73 +28,87 @@ RUN apt-get update \
 
 Creamos tres servicios
 
-1. Un motor MySQL
-- base de datos: dbDATA (root/1234)
-- se inicializa con: dump\\*.sql
-- crea dos tablas: Data, pet
-- la persistimos en un Volume: mysql_data
-
-1. Un frontend con Apache 2.4 y php habilitado
-- Tiene un index.php como único script en ./www:/var/www/html 
-- explorer "http://localhost"
-
+1. Un motor **MySQL**
+    - base de datos: `dbDATA` (root/1234)
+    - se inicializa con un proceso en docker que ejecuta los scripts en: dump\\*.sql
+    - crea dos tablas: `Data, pet`
+    - la persistimos en un `Volume`:**mysql_data**
+1. Un frontend con **Apache 2.4** y PHP habilitado
+    - Tiene un `index.php` como único script en `./www:/var/www/html`
+    - explorer ["http://localhost"](http://localhost)
 1. Un frontend administrador de la DB
-- phpMyAdmin
-- explorer "http://localhost:8000"
+    - phpMyAdmin
+    - explorer ["http://localhost:8000"](http://localhost:8000)
 
 
-En dump se encuentran los script para inicializar la base de datos
-base de Datos: dbData
-tablas: Data, pet
-root/1234
+En `./dump` se encuentran los script para inicializar la base de datos
+base de Datos: `dbData`
+tablas: `Data, pet`
+`root/1234`
 
-En www se encuentra Index.php que hace una lectura de Data y muestra los registros
-La veremos en http://localhost?table=pet
+En `./www` se encuentra Index.php que hace una lectura de Data y muestra los registros
+La veremos en ["http://localhost?table=pet"](http://localhost?table=pet)
 
-En conf se han puesto valores de configuracion de mysql que sobreescribimos
-lo podemos comprobar ejecutando
-show variables like 'max_connections'
-Esto da un error y se ignora. Parecen ser problemas de permisos
-
+En `./conf` se han puesto valores de configuracion de mysql que sobreescribimos
+lo podemos comprobar ejecutando:
+```
+docker exec -it db mysql -u root -p1234 -e "show variables like 'max_connections';"
+```
+Esto en Windows da un error y se ignora. Parecen ser problemas de permisos
+```diff
+- mysql: [Warning] World-writable config file '/etc/mysql/conf.d/misParams.cnf' is ignored.
+```
+https://stackoverflow.com/questions/64379031/how-do-i-set-the-perms-of-a-my-cnf-file-to-be-readonly-from-within-docker-not-a
+https://medium.com/@kauminikg/how-to-increase-max-connections-in-mysql-docker-container-772ae17e3526
 
 para hacer pruebas -->
+```
 docker-compose up -d
+docker-compose logs
 explorer "http://localhost?table=pet"
 explorer "http://localhost:8000"
 docker-compose down && docker volume prune -f && docker volume ls
+```
 
 Se ha puesto dos servicios de adm de BDATOS
 http://localhost:8000 phpMyadmin
 http://localhost:8080 adminer
 
 
-
-
 # BACKUP
 
 ## Con comandos de la BD
 ### Backup
+```
 docker compose exec -it db mysql -u root -p1234 dbDATA -e "select * from pet;"
 docker compose exec -it db mysqldump -u root -p1234 --databases dbDATA > backup/dbData.sql
+```
 ### Restore
 (desde el bash de git!!!!)
+```
 docker compose exec -it db mysql -u root -p1234 < backup/dbData.sql
-
+```
 ## Con comandos de unix
 (hay que parar la base de datos y dejar el container exited para poder acceder --volumes-from )
+```
 docker compose exec -it db mysql -u root -p1234 -e "shutdown;"
 docker run -it -v %CD%\backup:/backup --volumes-from db ubuntu tar cvf /backup/backup.tar /var/lib/mysql
 dir backup
 docker run -it -v %CD%\backup:/backup --volumes-from db ubuntu tar xvf /backup/backup.tar
 docker compose up -d db
-
-
-## Commit de la imagen
+```
+## IMAGEN
+# Commit de la imagen
 (si los datos están en un volumen)
+```
 docker commit db  srlopez/mysql:8
 docker images
 docker image save -o backup/image.tar srlopez/mysql:8
 docker rmi srlopez/mysql:8
 docker image load -i backup/image.tar 
 docker images
-
+```
+# Dockerfile
+```
+docker build -t phql .
+```

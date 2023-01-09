@@ -13,4 +13,4 @@ Y completar:
 - Archivo de Creación de imágenes: Dockerfile
 - Archivo de Composición de  servicios: docker-compose.yml
 
-Y paso a paso ... (LEEME)[LEEME.md]
+Y paso a paso ... [LEEME](./LEEME.md)
