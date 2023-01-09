@@ -1,4 +1,5 @@
 # A PELO
+```
 docker run -d --name db  -v %CD%\dump:/dump -e MYSQL_ROOT_PASSWORD=1234 -v mysql_data:/var/lib/mysql mysql:latest
 docker exec -it db bash
     cd /dump
@@ -9,9 +10,10 @@ docker exec -it db bash
 docker build -t phql .
 docker images
 docker run -d -v %CD%\www:/var/www/html -p 80:80 --link db phql
+```
 
-
-Dockerfile (incluido apache mysqllib php)
+`Dockerfile` (Una imagen con PHP8 Apache 2.4 y librería de acceso a `mysql` )
+```
 FROM php:8.2-apache
 ARG DEBIAN_FRONTEND=noninteractive
 RUN docker-php-ext-install mysqli
@@ -20,8 +22,7 @@ RUN apt-get update \
     && apt-get install -y zlib1g-dev \
     && rm -rf /var/lib/apt/lists/* \
     && docker-php-ext-install zip
-    
-
+``` 
 
 # DOCKER LAMP
 
